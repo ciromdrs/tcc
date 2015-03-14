@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block corpo %}
+<form method='POST'>
+    <textarea name='texto'></textarea>
+    <input type="submit">
+</form>
+
+{{user_id}}
+
+<a href="{{ url|safe }}">{{ texto_link }}</a>
+
+{% for r in recados %}
+<div>
+	<b>{{r.autor}}</b> em {{r.data}} escreveu: <br>
+	"{{r.texto}}"
+</div>
+{% endfor %}
+
+{% endblock %}

@@ -21,7 +21,7 @@ class BaseHandler(webapp2.RequestHandler):
                 render(valores))
 
 class Home(BaseHandler):
-    @login_required
+    #@login_required
     def get(self):
         user = users.get_current_user()
         
@@ -64,7 +64,7 @@ def get_recados():
     recados = memcache.get('recados')
     if not recados:
         recados = Recado.query(ancestor=parent_key()).order(-Recado.data).fetch(10)
-        memcache.add('recados', recados, 5)
+        memcache.add(key='recados', value=recados, time=3)
     return recados
 
 class TimeLine(ndb.Model):

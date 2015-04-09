@@ -31,7 +31,7 @@ class Home(BaseHandler):
             texto_link = 'Login'
         
         # Recados
-        recados = get_recados()
+        recados = Recado.get_recados()
                 
         self.responder('home.html',
              {'url' : url,
@@ -54,10 +54,11 @@ class Recado(ndb.Model):
     texto = ndb.TextProperty()
     data = ndb.DateTimeProperty(auto_now_add=True)
 
-# Pegando recados via memcache ou DB
-def get_recados():
-    q = Recado.query(ancestor=parent_key()).order(-Recado.data)
-    return ndb.get_multi(q.fetch(10, keys_only=True))
+    @classmethod
+    def get_recados(cls):
+        '''Pegando recados via NDB com cache automático'''
+        q = Recado.query(ancestor=parent_key()).order(-Recado.data)
+        return ndb.get_multi(q.fetch(10, keys_only=True))
 
 class TimeLine(ndb.Model):
     '''Modelo que serve apenas para ser o Parent de todos os recados.'''

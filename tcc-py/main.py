@@ -2,10 +2,8 @@
 
 import os, webapp2, jinja2
 
-from google.appengine.api import memcache
 from google.appengine.api import users
 from google.appengine.ext import ndb
-from google.appengine.ext.webapp.util import login_required
 
 # Jinja2
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -21,7 +19,6 @@ class BaseHandler(webapp2.RequestHandler):
                 render(valores))
 
 class Home(BaseHandler):
-    #@login_required
     def get(self):
         user = users.get_current_user()
         
@@ -45,11 +42,9 @@ class Home(BaseHandler):
     def post(self):
         user = users.get_current_user()
         texto = self.request.get('texto', None)
+        autor = user.nickname() if user else 'Anônimo'
         
-        if user:
-            Recado(parent = parent_key(), autor = user.nickname(), texto = texto).put()
-        else:
-            pass
+        Recado(parent = parent_key(), autor = autor, texto = texto).put()
         self.redirect('/')
 
 # Models
@@ -61,11 +56,8 @@ class Recado(ndb.Model):
 
 # Pegando recados via memcache ou DB
 def get_recados():
-    recados = memcache.get('recados')
-    if not recados:
-        recados = Recado.query(ancestor=parent_key()).order(-Recado.data).fetch(10)
-        memcache.add(key='recados', value=recados, time=3)
-    return recados
+    q = Recado.query(ancestor=parent_key()).order(-Recado.data)
+    return ndb.get_multi(q.fetch(10, keys_only=True))
 
 class TimeLine(ndb.Model):
     '''Modelo que serve apenas para ser o Parent de todos os recados.'''

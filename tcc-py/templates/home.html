@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% block corpo %}
 <form method='POST'>
-    <textarea name='texto'></textarea>
+    <input type="text" placeholder="Cole o link de uma imagem aqui" name='url'> <br/>
+    <textarea name='texto'></textarea> <br/>
     <input type="submit">
 </form>
 
@@ -12,7 +13,10 @@
 {% for r in recados %}
 <div>
 	<b>{{r.autor}}</b> em {{r.data}} escreveu: <br>
-	"{{r.texto}}"
+	"{{r.texto}}"<br>
+	{% if r.imagem %}
+	<img src="/img/{{r.key.urlsafe()}}"><br><br>
+	{% endif %}
 </div>
 {% endfor %}
 

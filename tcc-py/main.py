@@ -2,7 +2,7 @@
 
 import os, webapp2, jinja2
 
-from google.appengine.api import users
+from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
 
 # Jinja2
@@ -17,6 +17,13 @@ class BaseHandler(webapp2.RequestHandler):
         self.response.write(
             JINJA_ENVIRONMENT.get_template(template).
                 render(valores))
+
+class ImgHandler(BaseHandler):
+    def get(self, key):
+        r = ndb.Key(urlsafe=key).get()
+        self.response.headers['Content-Type'] = 'image/jpeg'
+        self.response.out.write(r.imagem)
+            
 
 class Home(BaseHandler):
     def get(self):
@@ -43,8 +50,12 @@ class Home(BaseHandler):
         user = users.get_current_user()
         texto = self.request.get('texto', None)
         autor = user.nickname() if user else 'Anônimo'
+        url = self.request.get('url')
+        imagem = None
+        if url:
+            imagem = urlfetch.Fetch(url).content
         
-        Recado(parent = parent_key(), autor = autor, texto = texto).put()
+        Recado(parent = parent_key(), autor = autor, texto = texto, imagem = imagem).put()
         self.redirect('/')
 
 # Models
@@ -53,6 +64,7 @@ class Recado(ndb.Model):
     autor = ndb.StringProperty()
     texto = ndb.TextProperty()
     data = ndb.DateTimeProperty(auto_now_add=True)
+    imagem = ndb.BlobProperty()
 
     @classmethod
     def get_recados(cls):
@@ -75,4 +87,5 @@ def parent_key():
 # App
 app = webapp2.WSGIApplication([
         ('/', Home),
+        (r'/img/(.+)', ImgHandler),
     ], debug=True)

@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+    <head>
+        <title>Python App</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/static/styles.css">
+    </head>
+    <body>
+		<form method='POST'>
+		    <input type="text" placeholder="Cole o link de uma imagem aqui" name='url'> <br/>
+		    <textarea name='texto'></textarea> <br/>
+		    <input type="submit">
+		</form>
+		
+		<a href="{{ url|safe }}">{{ texto_link }}</a>
+		
+		{% for r in recados %}
+		<div>
+			<b>{{r.autor}}</b> em {{r.data}} escreveu: <br>
+			"{{r.texto}}"<br>
+			{% if r.imagem %}
+			<img src="/img/{{r.key.urlsafe()}}"><br><br>
+			{% endif %}
+		</div>
+		{% endfor %}
+    </body>
+</html>

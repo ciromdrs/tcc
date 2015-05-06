@@ -7,25 +7,12 @@ from google.appengine.ext import ndb
 
 # Jinja2
 JINJA_ENVIRONMENT = jinja2.Environment(
-    loader=jinja2.FileSystemLoader(os.path.dirname(__file__) + '/templates'),
+    loader=jinja2.FileSystemLoader(os.path.dirname(__file__)),
     extensions=['jinja2.ext.autoescape'],
     autoescape=True)
 
-# Handlers
-class BaseHandler(webapp2.RequestHandler):
-    def responder(self, template, valores={}):
-        self.response.write(
-            JINJA_ENVIRONMENT.get_template(template).
-                render(valores))
-
-class ImgHandler(BaseHandler):
-    def get(self, key):
-        r = ndb.Key(urlsafe=key).get()
-        self.response.headers['Content-Type'] = 'image/jpeg'
-        self.response.out.write(r.imagem)
-            
-
-class Home(BaseHandler):
+# Handlers          
+class Home(webapp2.RequestHandler):
     def get(self):
         user = users.get_current_user()
         
@@ -57,6 +44,17 @@ class Home(BaseHandler):
         
         Recado(parent = parent_key(), autor = autor, texto = texto, imagem = imagem).put()
         self.redirect('/')
+    
+    def responder(self, template, valores={}):
+        self.response.write(
+            JINJA_ENVIRONMENT.get_template(template).
+                render(valores))
+
+class ImgHandler(webapp2.RequestHandler):
+    def get(self, key):
+        r = ndb.Key(urlsafe=key).get()
+        self.response.headers['Content-Type'] = 'image/jpeg'
+        self.response.out.write(r.imagem)
 
 # Models
 class Recado(ndb.Model):
@@ -70,14 +68,14 @@ class Recado(ndb.Model):
     def get_recados(cls):
         '''Pegando recados via NDB com cache automático'''
         q = Recado.query(ancestor=parent_key()).order(-Recado.data)
-        return ndb.get_multi(q.fetch(10, keys_only=True))
+        return ndb.get_multi(q.fetch(10, keys_only=True)) # Auto-cache
 
 class TimeLine(ndb.Model):
     '''Modelo que serve apenas para ser o Parent de todos os recados.'''
     pass
 
-# Criando Model ancestral para manter consistência no banco
 def parent_key():
+    '''Criando Model ancestral para manter consistência no banco'''
     tm = TimeLine.query().get()
     if not tm:
         tm = TimeLine()

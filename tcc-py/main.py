@@ -2,6 +2,7 @@
 
 import os, webapp2, jinja2
 
+from google.appengine.api import memcache
 from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
 
@@ -31,6 +32,7 @@ class Home(webapp2.RequestHandler):
              {'url' : url,
               'texto_link' : texto_link,
               'recados' : recados,
+              'user' : user
               })
 
     def post(self):
@@ -52,9 +54,13 @@ class Home(webapp2.RequestHandler):
 
 class ImgHandler(webapp2.RequestHandler):
     def get(self, key):
-        r = ndb.Key(urlsafe=key).get()
+        img = memcache.get(key)
+        if not img:        
+            img = ndb.Key(urlsafe=key).get().imagem
+            memcache.set(key, img) 
+        
         self.response.headers['Content-Type'] = 'image/jpeg'
-        self.response.out.write(r.imagem)
+        self.response.out.write(img)
 
 # Models
 class Recado(ndb.Model):

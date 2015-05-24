@@ -6,13 +6,17 @@
         <link rel="stylesheet" href="/static/styles.css">
     </head>
     <body>
+        {% if user %}
+        Olá, {{user.nickname()}}.
+        {% else %}
+        Olá, visitante.
+        {% endif %}
+        Clique para fazer <a href="{{ url|safe }}">{{ texto_link }}</a>
 		<form method='POST'>
 		    <input type="text" placeholder="Cole o link de uma imagem aqui" name='url'> <br/>
 		    <textarea name='texto'></textarea> <br/>
 		    <input type="submit">
 		</form>
-		
-		<a href="{{ url|safe }}">{{ texto_link }}</a>
 		
 		{% for r in recados %}
 		<div>

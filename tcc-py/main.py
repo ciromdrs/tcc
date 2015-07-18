@@ -5,6 +5,8 @@ import os, webapp2, jinja2
 from google.appengine.api import memcache
 from google.appengine.api import users, urlfetch
 from google.appengine.ext import ndb
+from webapp2_extras.appengine.users import login_required
+ 
 
 # Jinja2
 JINJA_ENVIRONMENT = jinja2.Environment(
@@ -14,74 +16,65 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 # Handlers          
 class Home(webapp2.RequestHandler):
+    @login_required
     def get(self):
         user = users.get_current_user()
         
-        # Login/Logout URL
-        if user:
-            url = users.create_logout_url(self.request.uri)
-            texto_link = 'Logout'
-        else:
-            url = users.create_login_url(self.request.uri)
-            texto_link = 'Login'
+        # Logout URL
+        url = users.create_logout_url(self.request.uri)
         
-        # Recados
-        recados = Recado.get_recados()
+        # Post
+        posts = Post.get_posts()
                 
-        self.responder('home.html',
-             {'url' : url,
-              'texto_link' : texto_link,
-              'recados' : recados,
-              'user' : user
-              })
+        self.respond('home.html', {'url' : url, 'posts' : posts, 'user' : user})
 
     def post(self):
         user = users.get_current_user()
-        texto = self.request.get('texto', None)
-        autor = user.nickname() if user else 'Anônimo'
+        text = self.request.get('text', None)
+        author = user.nickname()
         url = self.request.get('url')
-        imagem = None
+        image = None
         if url:
-            imagem = urlfetch.Fetch(url).content
+            image = urlfetch.Fetch(url).content
         
-        Recado(parent = parent_key(), autor = autor, texto = texto, imagem = imagem).put()
+        Post(parent = parent_key(), author = author, text = text, image = image).put()
         self.redirect('/')
     
-    def responder(self, template, valores={}):
+    def respond(self, template, values={}):
         self.response.write(
             JINJA_ENVIRONMENT.get_template(template).
-                render(valores))
+                render(values))
 
 class ImgHandler(webapp2.RequestHandler):
     def get(self, key):
         img = memcache.get(key)
         if not img:        
-            img = ndb.Key(urlsafe=key).get().imagem
+            img = ndb.Key(urlsafe=key).get().image
             memcache.set(key, img) 
         
         self.response.headers['Content-Type'] = 'image/jpeg'
         self.response.out.write(img)
 
 # Models
-class Recado(ndb.Model):
-    '''Modelo que representa um recado.'''
-    autor = ndb.StringProperty()
-    texto = ndb.TextProperty()
-    data = ndb.DateTimeProperty(auto_now_add=True)
-    imagem = ndb.BlobProperty()
+class Post(ndb.Model):
+    '''Post model.'''
+    author = ndb.StringProperty()
+    text = ndb.TextProperty()
+    date = ndb.DateTimeProperty(auto_now_add=True)
+    image = ndb.BlobProperty()
 
     @classmethod
-    def get_recados(cls):
-        '''Pegando recados via NDB com cache automático'''
-        q = Recado.query(ancestor=parent_key()).order(-Recado.data)
-        return ndb.get_multi(q.fetch(10, keys_only=True)) # Auto-cache
+    def get_posts(cls):
+        '''Retrieves posts from datastore'''
+        q = Post.query(ancestor=parent_key()).order(-Post.date)
+        return q.fetch(10)
 
 class TimeLine(ndb.Model):
-    '''Modelo que serve apenas para ser o Parent de todos os recados.'''
+    '''TimeLine model. It's the Parent entity of all posts.'''
     pass
 
 def parent_key():
-    '''Criando Model ancestral para manter consistência no banco'''
+    '''Creating ancestor model to ensure consistency'''
     tm = TimeLine.query().get()
     if not tm:
         tm = TimeLine()

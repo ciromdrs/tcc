@@ -6,24 +6,20 @@
         <link rel="stylesheet" href="/static/styles.css">
     </head>
     <body>
-        {% if user %}
-        Olá, {{user.nickname()}}.
-        {% else %}
-        Olá, visitante.
-        {% endif %}
-        Clique para fazer <a href="{{ url|safe }}">{{ texto_link }}</a>
+        Hello, {{user.nickname()}}.
+        Click to <a href="{{ url|safe }}">logout</a>
 		<form method='POST'>
-		    <input type="text" placeholder="Cole o link de uma imagem aqui" name='url'> <br/>
-		    <textarea name='texto'></textarea> <br/>
+		    <input type="text" placeholder="Paste image link..." name='url'> <br/>
+		    <textarea name='text'></textarea> <br/>
 		    <input type="submit">
 		</form>
 		
-		{% for r in recados %}
+		{% for p in posts %}
 		<div>
-			<b>{{r.autor}}</b> em {{r.data}} escreveu: <br>
-			"{{r.texto}}"<br>
-			{% if r.imagem %}
-			<img src="/img/{{r.key.urlsafe()}}"><br><br>
+			<b>{{p.author}}</b> in {{p.date}} wrote: <br>
+			"{{p.text}}"<br>
+			{% if p.image %}
+			<img src="/img/{{p.key.urlsafe()}}"><br><br>
 			{% endif %}
 		</div>
 		{% endfor %}

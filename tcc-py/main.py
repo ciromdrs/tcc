@@ -31,7 +31,7 @@ class Home(webapp2.RequestHandler):
     def post(self):
         user = users.get_current_user()
         text = self.request.get('text', None)
-        author = user.nickname()
+        author = user.nickname() if user else 'Anonymous'
         url = self.request.get('url')
         image = None
         if url:
@@ -74,7 +74,7 @@ class TimeLine(ndb.Model):
     pass
 
 def parent_key():
-    '''Creating ancestor model to ensure consistency'''
+    '''Creates an ancestor model to ensure consistency and returns its key'''
     tm = TimeLine.query().get()
     if not tm:
         tm = TimeLine()

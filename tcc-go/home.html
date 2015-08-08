@@ -1,0 +1,23 @@
+<html>
+  <head>
+    <title>Go App</title>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="/static/styles.css">
+  </head>
+  <body>
+    <span>Hello, {{.User.Email}}.</span>
+    
+    <span> You can <a href="{{.URL}}">logout</a>. </span>
+    <form action="/sign" method="post">
+      <div><textarea name="text" rows="3" cols="60"></textarea></div>
+      <div><input name="url" type="text" placeholder="Paste a link to an image..."></div>
+      <div><input type="submit"></div>
+    </form>
+    {{range .Posts}}
+      <div><b>{{ .Author }}</b> on {{.Date}} wrote:</div>
+      <p>{{ .Text }}</p>
+      <img src="/img?key={{.AuxKey}}">
+    {{end}}
+  </body>
+</html>
+

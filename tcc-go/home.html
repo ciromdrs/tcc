@@ -16,7 +16,9 @@
     {{range .Posts}}
       <div><b>{{ .Author }}</b> on {{.Date}} wrote:</div>
       <p>{{ .Text }}</p>
-      <img src="/img?key={{.AuxKey}}">
+      {{if .Img}}
+        <img src="/img?key={{.AuxKey}}">
+      {{end}}
     {{end}}
   </body>
 </html>

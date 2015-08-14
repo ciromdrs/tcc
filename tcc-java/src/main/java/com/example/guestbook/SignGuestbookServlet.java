@@ -32,14 +32,17 @@ public class SignGuestbookServlet extends HttpServlet {
 
     Key timelineKey = KeyFactory.createKey("timeline", "timeline_key");
     String content = req.getParameter("content");
+    String url = req.getParameter("url");
     Date date = new Date();
     Entity post = new Entity("post", timelineKey);
     if (user != null) {
         post.setProperty("author", user.getEmail());
     }
     post.setProperty("date", date);
-    if (!req.getParameter("url").trim().isEmpty()) {
-    	post.setProperty("img", new Blob(fetchImage(req.getParameter("url"))));
+    if (url != null){
+	    if (url.trim().isEmpty()) {
+	    	post.setProperty("img", new Blob(fetchImage(url)));
+	    }
     }
     post.setProperty("content", content);
 

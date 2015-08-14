@@ -88,17 +88,21 @@ func sign(w http.ResponseWriter, r *http.Request) {
     context := appengine.NewContext(r)
     
     // Fetching image
-    client := urlfetch.Client(context)    
-    fetchResp, fetchErr := client.Get(r.FormValue("url"))
-    if fetchErr != nil {
-        http.Error(w, fetchErr.Error(), http.StatusInternalServerError)
+    var bytes []byte
+    if r.FormValue("url") != "" {
+        client := urlfetch.Client(context)    
+        fetchResp, fetchErr := client.Get(r.FormValue("url"))
+        if fetchErr != nil {
+            http.Error(w, fetchErr.Error(), http.StatusInternalServerError)
+        }
+        bytes, _ = ioutil.ReadAll(fetchResp.Body) 
     }
-    bytes, readErr := ioutil.ReadAll(fetchResp.Body) 
-    if readErr != nil {
-		http.Error(w, readErr.Error(), http.StatusInternalServerError)
-	}
-
-    name := user.Current(context).String()
+    
+    u := user.Current(context)
+    name := ""
+    if u != nil {
+        name = u.String()
+    }
     
     post := &Post{
         Text   : r.FormValue("text"),

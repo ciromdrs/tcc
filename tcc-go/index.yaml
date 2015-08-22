@@ -16,14 +16,3 @@ indexes:
   - name: Date
     direction: desc
 
-- kind: Recado
-  ancestor: yes
-  properties:
-  - name: Data
-    direction: desc
-
-- kind: Recado
-  ancestor: yes
-  properties:
-  - name: data
-    direction: desc
